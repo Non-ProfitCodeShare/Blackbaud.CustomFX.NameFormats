@@ -1,0 +1,32 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="25e27742-2907-4b10-909f-b41610335f17"
+	Name="USR_UFN_GETTITLEGENDER"
+	Description="Get Title Gender - 0 = unisex, 1 = male, 2 = female"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_GETTITLEGENDER"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_GETTITLEGENDER(@TITLEGUID uniqueidentifier)
+returns tinyint
+with execute as caller
+as begin
+	-- 0 if unisex, 1 if male, 2 if female
+	DECLARE @RESULT tinyint = 0
+	
+	SELECT @RESULT = isnull(tp.GENDER, 0)
+	FROM dbo.USR_TITLEPROPERTIES tp 
+	WHERE (@TITLEGUID IS NULL OR tp.TITLECODEID = @TITLEGUID)
+	
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

@@ -1,0 +1,194 @@
+<EditDataFormTemplateSpec 
+    xmlns="bb_appfx_editdataformtemplate"
+    xmlns:c="bb_appfx_commontypes"
+    ID="8722545d-bf8c-4254-8a03-b8f4ea760ab0"
+    Name="Set Suffix Options"
+    Description="Set Suffix Options"
+    Author="Nolan Regenwether"
+    DataFormInstanceID="1eece55d-5f1b-4fc1-a592-857b5055d0df"
+    c:SecurityUIFolder="NameFormat\Admin"
+    FormHeader="Set Suffix Options"
+    HasID="false"
+    HelpKey="http://localhost/BBInfinity/browser/htmlforms/custom/blackbaud.customfx.nameformats/SuffixUIModel/SetSuffixOptionsHelp.html"
+    >
+
+	<SPDataForm>
+
+		<!-- define the edit load SP, which is used to load the data for the form -->
+		<LoadImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDITLOAD_EDITSUFFIXPROPERTIES">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDITLOAD_EDITSUFFIXPROPERTIES
+(
+    @DATALOADED bit = 0 output,
+    @TSLONG bigint = 0 output,
+	@SUFFIXCOLFIELD xml = null output
+)
+as
+
+	set nocount on;
+
+	-- be sure to set these, in case the select returns no rows
+	set @DATALOADED = 0
+	set @TSLONG = 0
+
+	SELECT @SUFFIXCOLFIELD = 
+	(SELECT 
+	sc.ID as SUFFIXCODEID,
+	coalesce(sp.ISACADEMICSUFFIX, 0)     as ISACADEMIC, 
+	coalesce(sp.ISFAMILIALSUFFIX, 0)     as ISFAMILIAL, 
+	coalesce(sp.ISPROFESSIONALSUFFIX, 0) as ISPROFESSIONAL, 
+	coalesce(sp.ISRELIGIOUSSUFFIX, 0)    as ISRELIGIOUS 
+	FROM dbo.SUFFIXCODE sc
+	LEFT OUTER JOIN dbo.USR_SUFFIXPROPERTIES sp
+		ON sc.ID = sp.SUFFIXCODEID
+	ORDER BY sc.DESCRIPTION
+	FOR XML PATH('ITEM'), ROOT('SUFFIXCOLFIELD'))
+
+	SET @DATALOADED = 1
+
+	return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</LoadImplementation>
+
+		<SaveImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDIT_EDITSUFFIXPROPERTIES">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDIT_EDITSUFFIXPROPERTIES 
+(
+
+	@CHANGEAGENTID uniqueidentifier = null,
+	@SUFFIXCOLFIELD xml
+)
+as
+
+	set nocount on;
+
+	if @CHANGEAGENTID is null  
+		exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+				
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate()
+
+	begin try
+		-- Update Current properties
+		update sp 
+		SET 
+			sp.ISACADEMICSUFFIX = st.ISACADEMIC, 
+			sp.ISFAMILIALSUFFIX = st.ISFAMILIAL, 
+			sp.ISPROFESSIONALSUFFIX = st.ISPROFESSIONAL, 
+			sp.ISRELIGIOUSSUFFIX = st.ISRELIGIOUS,
+			sp.CHANGEDBYID = @CHANGEAGENTID, 
+			sp.DATECHANGED = @CURRENTDATE
+		FROM dbo.USR_SUFFIXPROPERTIES sp
+		INNER JOIN (
+			SELECT 
+				Tbl.Col.value('SUFFIXCODEID[1]', 'uniqueidentifier') as SUFFIXCODEID,
+				isnull(Tbl.Col.value('ISACADEMIC[1]', 'bit'), 0) as [ISACADEMIC], 
+				isnull(Tbl.Col.value('ISFAMILIAL[1]', 'bit'), 0) as [ISFAMILIAL], 
+				isnull(Tbl.Col.value('ISPROFESSIONAL[1]', 'bit'), 0) as [ISPROFESSIONAL], 
+				isnull(Tbl.Col.value('ISRELIGIOUS[1]', 'bit'), 0) as [ISRELIGIOUS]
+			FROM @SUFFIXCOLFIELD.nodes('//SUFFIXCOLFIELD/ITEM') Tbl(Col)
+			WHERE Tbl.Col.value('SUFFIXCODEID[1]', 'uniqueidentifier') IS NOT NULL
+		) st
+			ON st.SUFFIXCODEID = sp.ID 
+
+		-- Save New Properties
+		INSERT INTO dbo.USR_SUFFIXPROPERTIES(ID, SUFFIXCODEID, ISACADEMICSUFFIX, ISFAMILIALSUFFIX, ISPROFESSIONALSUFFIX, ISRELIGIOUSSUFFIX, ADDEDBYID, CHANGEDBYID, DATEADDED, DATECHANGED)
+		SELECT st.SUFFIXCODEID, st.SUFFIXCODEID, st.ISACADEMIC, st.ISFAMILIAL, st.ISPROFESSIONAL, st.ISRELIGIOUS, @CHANGEAGENTID, @CHANGEAGENTID, @CURRENTDATE, @CURRENTDATE
+		FROM (
+			SELECT 
+				Tbl.Col.value('SUFFIXCODEID[1]', 'uniqueidentifier') as SUFFIXCODEID,
+				isnull(Tbl.Col.value('ISACADEMIC[1]', 'bit'), 0) as [ISACADEMIC], 
+				isnull(Tbl.Col.value('ISFAMILIAL[1]', 'bit'), 0) as [ISFAMILIAL], 
+				isnull(Tbl.Col.value('ISPROFESSIONAL[1]', 'bit'), 0) as [ISPROFESSIONAL], 
+				isnull(Tbl.Col.value('ISRELIGIOUS[1]', 'bit'), 0) as [ISRELIGIOUS]
+			FROM @SUFFIXCOLFIELD.nodes('//SUFFIXCOLFIELD/ITEM') Tbl(Col)
+			WHERE Tbl.Col.value('SUFFIXCODEID[1]', 'uniqueidentifier') IS NOT NULL
+		) st
+		WHERE st.SUFFIXCODEID NOT IN (SELECT ID FROM dbo.USR_SUFFIXPROPERTIES)
+
+	end try
+	begin catch
+		exec dbo.USP_RAISE_ERROR
+		return 1
+	end catch
+
+return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</SaveImplementation>
+
+	</SPDataForm>
+
+	<!-- describe fields on the form, which correspond to parameters on the SP.  Note that system paramters 
+	like the record ID, DATALOADED, TSLONG, and CURRENTAPPUSERID need not be listed. -->
+	<FormMetaData xmlns="bb_appfx_commontypes">
+		<FormFields>
+			<FormField FieldID="SUFFIXCOLFIELD" Caption="Suffix Collection" DataType="XML">
+				<Collection EnablePaging="true" ItemsPerPage="100" RenderStyle="Default" ViewMode="Grid">
+					<Fields>
+						<FormField FieldID="SUFFIXCODEID" Caption="Suffix" DataType="Guid">
+							<CodeTable CodeTableName="SUFFIXCODE" IncludeInactive="true"></CodeTable>
+						</FormField>
+						<FormField FieldID="ISACADEMIC" Caption="Is Suffix Academic? (PhD, MD, DO, DDS)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="ISFAMILIAL" Caption="Is Suffix Familial? (Jr, Sr, III)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="ISPROFESSIONAL" Caption="Is Suffix Professional? (CPA, MBA)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="ISRELIGIOUS" Caption="Is Suffix Religious? (RSM)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+					</Fields>
+				</Collection>
+			</FormField>
+			
+		</FormFields>
+
+        <WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFX.NameFormats.UIModel.dll" ClassName="Blackbaud.CustomFX.NameFormats.UIModel.SetSuffixOptionsUIModel" />
+            <WebUI>
+                <ExternalResource Url="browser/htmlforms/custom/blackbaud.customfx.nameformats/SuffixUIModel/SetSuffixOptions.html" />
+            </WebUI>
+        </WebUIComponent>
+
+        
+
+
+		
+		
+        <!--<WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFX.NameFormats.UIModel.dll" ClassName="Blackbaud.CustomFX.NameFormats.UIModel.SetSuffixOptionsUIModel" />
+            <WebUI>
+                <ExternalResource Url="browser/htmlforms/custom/blackbaud.customfx.nameformats/SuffixUIModel/SetSuffixOptions.html" />
+            </WebUI>
+        </WebUIComponent>-->
+
+        
+
+        <!--<WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFX.NameFormats.UIModel.dll" ClassName="Blackbaud.CustomFX.NameFormats.UIModel.SetSuffixOptionsUIModel" />
+            <WebUI>
+                <ExternalResource Url="browser/htmlforms/custom/blackbaud.customfx.nameformats/SuffixUIModel/SetSuffixOptions.html" />
+            </WebUI>
+        </WebUIComponent>-->
+
+		
+	</FormMetaData>
+	<AlterExistingPages xmlns="bb_appfx_pagedefinition">
+		<AlterPages>
+			<AlterPage PageID="0ef074a4-55e9-49f2-9279-2a2c17a302be">
+				<AlterOrAddPageActionGroups>
+					<AlterOrAddPageActionGroup ID="3c9d9af0-c935-414b-a366-00adc1289f54" Caption="Set Name Format Options" ImageKey="CATALOG:Blackbaud.AppFx.Marketing.MembershipCatalog,Blackbaud.AppFx.Marketing.MembershipCatalog.membership.png" Visible="true">
+						<AddAction Sequence="1">
+							<Action ID="cbdb3e9b-9721-4879-8cc1-5729d8b776e5" Caption="Set Suffix Options" ImageKey="CATALOG:Blackbaud.AppFx.Education.Catalog,Blackbaud.AppFx.Education.Catalog.education_16.png" Visible="true" ShowCaptionOnToolbar="true" Enabled="true">
+								<c:ShowDataForm DataFormID="1eece55d-5f1b-4fc1-a592-857b5055d0df">
+									<c:PostActionEvent>
+										<c:Toast Importance="Normal" Message="Suffix Options Set Successfully" />
+									</c:PostActionEvent>
+								</c:ShowDataForm>
+							</Action>
+						</AddAction>
+					</AlterOrAddPageActionGroup>
+				</AlterOrAddPageActionGroups>
+			</AlterPage>
+		</AlterPages>
+	</AlterExistingPages>
+</EditDataFormTemplateSpec>

@@ -1,0 +1,31 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="6ead64b1-d989-46d4-8895-63af4cfb7c81"
+	Name="USR_UFN_ISMARITALTITLE"
+	Description="Is marital (Standard, indicates married / unmarried, mr. mrs. ms. etc.) title?"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISMARITALTITLE"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISMARITALTITLE(@TITLEGUID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @RESULT bit = 0
+	
+	SELECT @RESULT = case COUNT(tp.ID) WHEN 0 THEN 0 ELSE 1 END
+	FROM dbo.USR_TITLEPROPERTIES tp
+	WHERE tp.TITLECODEID = @TITLEGUID AND tp.ISMARITALTITLE = 1
+	
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

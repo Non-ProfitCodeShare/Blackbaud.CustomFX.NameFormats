@@ -1,0 +1,31 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="291faba2-f6f4-48b2-b5a2-f306df65dca9"
+	Name="USR_UFN_ISTITLERELIGIOUS"
+	Description="Is the title Religious?"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISTITLERELIGIOUS"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISTITLERELIGIOUS(@TITLEGUID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @RESULT bit = 0
+	
+	SELECT @RESULT = case COUNT(tp.ID) WHEN 0 THEN 0 ELSE 1 END
+	FROM dbo.USR_TITLEPROPERTIES tp
+	WHERE tp.TITLECODEID = @TITLEGUID AND tp.ISRELIGIOUSTITLE = 1
+	
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

@@ -1,0 +1,31 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="7f9ab414-57b3-4f54-81b4-620c5bb6f7a8"
+	Name="USR_UFN_ISFAMILIALSUFFIX"
+	Description="Is the suffix familial (Jr. Sr. Etc.)"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISFAMILIALSUFFIX"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXCODEID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @RESULT bit = 0
+
+	SELECT @RESULT = CASE COUNT(sp.ID) WHEN 0 then 0 else 1 end 
+	FROM dbo.USR_SUFFIXPROPERTIES sp
+	WHERE sp.SUFFIXCODEID = @SUFFIXCODEID AND sp.ISFAMILIALSUFFIX = 1
+	
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

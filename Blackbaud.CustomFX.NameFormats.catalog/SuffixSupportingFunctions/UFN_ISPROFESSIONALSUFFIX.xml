@@ -1,0 +1,31 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="b9aff921-e495-4870-a0f5-f6297f13f9f3"
+	Name="USR_UFN_ISPROFESSIONALSUFFIX"
+	Description="Is the suffix Professional (MBA, CPA, Etc.)"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISPROFESSIONALSUFFIX"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISPROFESSIONALSUFFIX(@SUFFIXCODEID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @RESULT bit = 0
+
+	SELECT @RESULT = CASE COUNT(sp.ID) WHEN 0 then 0 else 1 end 
+	FROM dbo.USR_SUFFIXPROPERTIES sp
+	WHERE sp.SUFFIXCODEID = @SUFFIXCODEID AND sp.ISPROFESSIONALSUFFIX = 1
+
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

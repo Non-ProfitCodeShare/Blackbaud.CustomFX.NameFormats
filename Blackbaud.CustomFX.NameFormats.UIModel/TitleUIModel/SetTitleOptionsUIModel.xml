@@ -1,0 +1,10 @@
+﻿<UIModelWizardMetadata>
+  <SpecFileName>EditTitleProperties.Edit.xml</SpecFileName>
+  <Namespace></Namespace>
+  <ClassName>SetTitleOptionsUIModel</ClassName>
+  <HtmlInfo GenerateHtml="true">
+    <HtmlFile>SetTitleOptions.html</HtmlFile>
+    <HtmlFolder>htmlforms\custom\blackbaud.customfx.nameformats\</HtmlFolder>
+  </HtmlInfo>
+  <GenerateFromDatabase>true</GenerateFromDatabase>
+</UIModelWizardMetadata>

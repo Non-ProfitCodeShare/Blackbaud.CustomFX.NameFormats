@@ -1,0 +1,28 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="39030678-e0e7-4820-bc3f-584451d5aa6d"
+	Name="USR_UFN_GETTITLEGUID"
+	Description="Gets the guid of the title"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_GETTITLEGUID"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_GETTITLEGUID(@TITLE nvarchar(100))
+returns uniqueidentifier
+with execute as caller
+as begin
+	DECLARE @RESULT uniqueidentifier
+	
+	SELECT @RESULT = tc.ID 
+	FROM dbo.TITLECODE tc
+	WHERE tc.DESCRIPTION = @TITLE
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

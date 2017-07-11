@@ -1,0 +1,40 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="64b32e7e-05fb-42d8-a523-e0f6ae062e2c"
+	Name="USR_UFN_GETSPOUSEID"
+	Description="Gets a constituent's living and active spouse, null for all else."
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_GETSPOUSEID"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_GETSPOUSEID(@CONSTITUENTID uniqueidentifier)
+returns uniqueidentifier
+with execute as caller
+as begin
+	DECLARE @SPOUSEID uniqueidentifier;
+	SET @SPOUSEID = null;
+	DECLARE @CONSINACTIVE bit;
+	DECLARE @SPINACTIVE bit;
+	DECLARE @CONSDECEASED bit;
+	DECLARE @SPDECEASED bit;
+	SET @CONSINACTIVE = 0;
+	SET @SPINACTIVE = 0 ;
+				
+	SELECT TOP 1 @CONSINACTIVE = a.ISINACTIVE, @SPINACTIVE = b.ISINACTIVE, @CONSDECEASED = a.DECEASED, @SPDECEASED = b.DECEASED, @SPOUSEID = b.ID
+	FROM dbo.V_QUERY_CONSTITUENT a
+	LEFT OUTER JOIN dbo.V_QUERY_CONSTITUENT b 
+		ON a.SPOUSE_ID = b.ID 
+	WHERE a.ID = @CONSTITUENTID
+
+	if @CONSINACTIVE = 1 OR @SPINACTIVE = 1 OR @CONSDECEASED = 1 OR @SPDECEASED = 1
+		SET @SPOUSEID = null;
+				
+	return @SPOUSEID;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

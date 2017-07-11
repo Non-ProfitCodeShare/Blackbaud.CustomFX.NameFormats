@@ -1,0 +1,71 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes"
+	ID="6095fcd7-496a-4fd1-9bbe-d3c8f988fd8c"
+	Name="USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL"
+	Description="Custom Individual Addressee Formal"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL"
+	IsNameFormatFunction="true"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL
+(
+	@CONSTITUENTID uniqueidentifier,
+	@LASTNAME nvarchar(100),
+	@FIRSTNAME nvarchar(50),
+	@MIDDLENAME nvarchar(50),
+	@TITLE nvarchar(100),
+	@SUFFIX nvarchar(100),
+	@SPOUSELASTNAME nvarchar(100),
+	@SPOUSEFIRSTNAME nvarchar(50),
+	@SPOUSEMIDDLENAME nvarchar(50),
+	@SPOUSETITLE nvarchar(100),
+	@SPOUSESUFFIX nvarchar(100)
+)
+returns nvarchar(700)
+with execute as caller
+as begin
+	declare @result nvarchar(700);
+	set @result = '';
+	
+	declare @suffixguid uniqueidentifier;
+	declare @spousesuffixguid uniqueidentifier;
+	SET @suffixguid = null; 
+	SET @spousesuffixguid = null;
+	SELECT @suffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX)
+	SELECT @spousesuffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SPOUSESUFFIX)
+	
+	
+	if len(isnull(@title, '')) > 0
+		set @result = @result + @TITLE + N' '
+
+	if len(isnull(@FIRSTNAME, '')) > 0
+		set @result = @result + @FIRSTNAME + N' '
+
+	--if len(isnull(@MIDDLENAME, '')) > 0 AND len(isnull(@FIRSTNAME, '')) > 0
+		--set @result = @result + left(@MIDDLENAME, 1) + N'. '
+
+	if len(isnull(@LASTNAME, '')) > 0
+		set @result = @result + @LASTNAME 
+
+	if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
+	begin
+		if left(@SUFFIX, 1) <> ',' AND @SUFFIX <> 'I' AND @SUFFIX <> 'II' AND @SUFFIX <> 'III' AND @SUFFIX <> 'IV' AND @SUFFIX <> 'V'
+			set @result = @result + N', '
+		if @SUFFIX = 'I'  OR @SUFFIX = 'II' OR @SUFFIX = 'III' OR @SUFFIX = 'IV' OR @SUFFIX = 'V'
+			set @result = @result + N' '
+		set @result = @result + @SUFFIX;
+	end
+
+	if len(isnull(@FIRSTNAME, '')) = 0 AND len(isnull(@title, '')) = 0 
+		set @result = @LASTNAME + N' Household'
+	
+	return @result;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

@@ -1,0 +1,7 @@
+C:\bbcopy\bbappfx\vroot\bin\custom\Blackbaud.CustomFX.NameFormats.UIModel.dll
+C:\bbcopy\bbappfx\vroot\bin\custom\Blackbaud.CustomFX.NameFormats.UIModel.pdb
+C:\ProjectNonDignity\NameFormats\Blackbaud.CustomFX.NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.vbprojResolveAssemblyReference.cache
+C:\ProjectNonDignity\NameFormats\Blackbaud.CustomFX.NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.dll
+C:\ProjectNonDignity\NameFormats\Blackbaud.CustomFX.NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.pdb
+C:\Program Files\Blackbaud\bbappfx\vroot\bin\custom\Blackbaud.CustomFX.NameFormats.UIModel.dll
+C:\Program Files\Blackbaud\bbappfx\vroot\bin\custom\Blackbaud.CustomFX.NameFormats.UIModel.pdb

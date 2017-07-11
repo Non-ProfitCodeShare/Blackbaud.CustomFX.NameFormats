@@ -1,0 +1,43 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="3312c1cc-f868-4e76-a0dd-c0e65b619cce"
+	Name="USR_UFN_SORTNAME"
+	Description="Takes two names, if ASCORDER is true, returns the alphabetically lowest."
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_SORTNAME"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_SORTNAME(@NAME nvarchar(100), @SPOUSENAME nvarchar(100), @ASCORDER bit)
+returns nvarchar(100)
+with execute as caller
+as begin
+	DECLARE @result nvarchar(100); 
+	SET @result = '';
+
+	if (@ASCORDER = 0 or @ASCORDER = 1) AND len(@NAME) > 0 AND len(@SPOUSENAME) > 0  
+	begin
+		if LOWER(@NAME) < LOWER(@SPOUSENAME)
+		begin
+			if @ASCORDER = 0
+				SET @result = @NAME;
+			else
+				SET @result = @SPOUSENAME;
+		end
+		else
+		begin
+			if @ASCORDER = 0
+				SET @result = @SPOUSENAME;
+			else
+				SET @result = @NAME;
+		end
+	end
+				
+	return @result;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

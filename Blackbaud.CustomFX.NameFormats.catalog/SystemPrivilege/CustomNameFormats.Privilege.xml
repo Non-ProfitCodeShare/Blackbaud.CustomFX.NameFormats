@@ -1,0 +1,9 @@
+﻿<SystemPrivilegeSpec
+    xmlns="bb_appfx_systemprivilege"
+    xmlns:c="bb_appfx_commontypes"
+	ID="066642db-fe2f-4247-b75e-8246b29d24f4" 
+	Name="Custom Name Formats Admin"
+	Description="Custom name format admin"
+	Author="Nolan Regenwether"
+    c:SecurityUIFolder="CustomNameFormats\Admin"
+/>

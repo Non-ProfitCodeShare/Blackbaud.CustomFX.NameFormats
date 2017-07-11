@@ -1,0 +1,31 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="bf97a2b4-d6d6-474d-8500-5df80f53dc09"
+	Name="USR_UFN_ISTITLEACADEMIC_DOCTORAL"
+	Description="Is the title academic doctoral level?"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISTITLEACADEMIC_DOCTORAL"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISTITLEACADEMIC_DOCTORAL(@TITLEGUID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @RESULT bit = 0
+	
+	SELECT @RESULT = case COUNT(tp.ID) WHEN 0 THEN 0 ELSE 1 END
+	FROM dbo.USR_TITLEPROPERTIES tp
+	WHERE tp.TITLECODEID = @TITLEGUID AND tp.ISSPECIALTITLE = 1
+	
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

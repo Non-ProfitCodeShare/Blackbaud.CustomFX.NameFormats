@@ -1,0 +1,10 @@
+﻿<UIModelWizardMetadata>
+  <SpecFileName>EditSuffixProperties.Edit.xml</SpecFileName>
+  <Namespace></Namespace>
+  <ClassName>SetSuffixOptionsUIModel</ClassName>
+  <HtmlInfo GenerateHtml="true">
+    <HtmlFile>SetSuffixOptions.html</HtmlFile>
+    <HtmlFolder>htmlforms\custom\blackbaud.customfx.nameformats\</HtmlFolder>
+  </HtmlInfo>
+  <GenerateFromDatabase>true</GenerateFromDatabase>
+</UIModelWizardMetadata>

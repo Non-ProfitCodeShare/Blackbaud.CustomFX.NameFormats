@@ -1,0 +1,29 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="46570218-c719-4ff6-97c8-c504b48dfcc8"
+	Name="USR_UFN_GETGENDER"
+	Description="Gets the gender for a given constituent"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_GETGENDER"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_GETGENDER(@CONSTITUENTID uniqueidentifier)
+returns tinyint
+with execute as caller
+as begin
+	DECLARE @GENDERCODE tinyint;
+				
+	SELECT @GENDERCODE = GENDERCODE FROM dbo.CONSTITUENT WHERE ID = @CONSTITUENTID
+	
+	IF @GENDERCODE IS NULL 
+		SET @GENDERCODE = 0
+				
+	return @GENDERCODE;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

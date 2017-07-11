@@ -1,0 +1,28 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="198384c7-a84b-4b34-87a3-da9786ab2da3"
+	Name="USR_UFN_GETSUFFIXGUID"
+	Description="Gets the Guid of the suffix"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_GETSUFFIXGUID"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX nvarchar(100))
+returns uniqueidentifier
+with execute as caller
+as begin
+	DECLARE @RESULT uniqueidentifier
+	
+	SELECT @RESULT = sc.ID 
+	FROM dbo.SUFFIXCODE sc
+	WHERE sc.DESCRIPTION = @SUFFIX
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

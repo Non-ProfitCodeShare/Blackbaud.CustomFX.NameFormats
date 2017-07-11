@@ -1,0 +1,38 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="cdd689f3-ec85-4cef-9559-92f39a80e2af"
+	Name="USR_UFN_ISPRIMARYHOUSEHOLDMEMBER"
+	Description="Is constituent Primary household member?"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISPRIMARYHOUSEHOLDMEMBER"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISPRIMARYHOUSEHOLDMEMBER(@CONSTITUENTID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @result bit;
+	
+	SET @result = 0;
+	
+	SELECT @result = conhh.ISPRIMARYMEMBER 
+	FROM dbo.V_QUERY_CONSTITUENT con 
+	LEFT OUTER JOIN dbo.CONSTITUENTHOUSEHOLD conhh
+		ON conhh.ID = con.ID 
+	LEFT OUTER JOIN dbo.CONSTITUENTHOUSEHOLD sphh
+		ON sphh.ID = con.SPOUSE_ID AND sphh.HOUSEHOLDID = conhh.HOUSEHOLDID
+	WHERE con.ID = @CONSTITUENTID
+	
+	
+	if @result is null 
+		SET @result = 0;
+	
+	return @result;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

@@ -1,0 +1,72 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes"
+	ID="cee45acb-bdb7-4282-a8dd-3bca71f080e8"
+	Name="USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL"
+	Description="Custom Individual Salutation Informal"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL"
+	IsNameFormatFunction="true"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL
+(
+	@CONSTITUENTID uniqueidentifier,
+	@LASTNAME nvarchar(100),
+	@FIRSTNAME nvarchar(50),
+	@MIDDLENAME nvarchar(50),
+	@TITLE nvarchar(100),
+	@SUFFIX nvarchar(100),
+	@SPOUSELASTNAME nvarchar(100),
+	@SPOUSEFIRSTNAME nvarchar(50),
+	@SPOUSEMIDDLENAME nvarchar(50),
+	@SPOUSETITLE nvarchar(100),
+	@SPOUSESUFFIX nvarchar(100)
+)
+returns nvarchar(700)
+with execute as caller
+as begin
+	declare @result nvarchar(700);
+	set @result = '';
+	
+	declare @titleguid uniqueidentifier;
+	declare @suffixguid uniqueidentifier;
+	SET @titleguid = null; 
+	SET @suffixguid = null; 
+	SELECT @titleguid = dbo.USR_UFN_GETTITLEGUID(@TITLE)
+	SELECT @suffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX)
+	
+	
+	if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 
+	begin
+		set @result = @TITLE + N' '
+		if len(isnull(@FIRSTNAME, '')) <> 0 
+			SET @RESULT = @RESULT + N' ' + @FIRSTNAME
+		else 
+			SET @RESULT = @RESULT + N' ' + @LASTNAME
+		return @result;
+	
+	end	
+	
+	if len(isnull(@FIRSTNAME, '')) > 0
+	begin
+		set @result =  @FIRSTNAME;
+	end
+		
+	if len(isnull(@title, '')) > 0  AND len(isnull(@FIRSTNAME, '')) = 0
+	Begin
+		set @result =  @TITLE + N' ' + @LASTNAME;
+	End
+	
+		
+	if len(isnull(@title, '')) = 0 AND len(isnull(@FIRSTNAME, '')) = 0 
+		set @result = @LASTNAME + N' Household';
+		
+	return @result;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

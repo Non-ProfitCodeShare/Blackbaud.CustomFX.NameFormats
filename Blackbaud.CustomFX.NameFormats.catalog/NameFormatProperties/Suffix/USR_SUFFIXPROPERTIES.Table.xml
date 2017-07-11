@@ -1,0 +1,24 @@
+﻿<TableSpec 
+	xmlns="bb_appfx_table"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="32d7a7b0-4726-4735-92f8-d923193a629d"
+	Name="Suffix Properties Table"
+	Description="Stores properties of the suffixes."
+	Author="Nolan Regenwether"
+	Tablename="USR_SUFFIXPROPERTIES"		   
+	IsBuiltIn="false"
+	>
+
+	<!-- define fields on the table -->
+	<Fields>
+		<ForeignKeyField Name="SUFFIXCODEID" Required="true" Description="Suffix Guid" ForeignDataType="uniqueidentifier" ForeignTable="SUFFIXCODE" ForeignFieldName="ID" Cardinality="OneToOne" OnDelete="CascadeDelete" />
+		<BooleanField Name="ISACADEMICSUFFIX"     DefaultValue="false" Description="Is this suffix academic (Ph.D, MD, DDS) doctoral level"/>
+		<BooleanField Name="ISFAMILIALSUFFIX"     DefaultValue="false" Description="Is this suffix familial (Jr., III, II)"/>
+		<BooleanField Name="ISPROFESSIONALSUFFIX" DefaultValue="false" Description="Is this suffix professional (CPA, MBA)"/>
+		<BooleanField Name="ISRELIGIOUSSUFFIX"    DefaultValue="false" Description="Is this suffix religious (RSM)"/>
+	</Fields>
+
+	
+	
+
+</TableSpec>

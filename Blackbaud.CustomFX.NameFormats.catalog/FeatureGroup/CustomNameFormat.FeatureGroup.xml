@@ -1,0 +1,23 @@
+﻿<FeatureGroupSpec
+    xmlns="bb_appfx_featuregroup"
+    ID="5496fc62-81ee-409d-84f5-246037e60e5e"
+	Name="Custom Name Format Admin"
+	Description="Custom Name Format Admin"
+    Author="Dignity Health"
+    >
+
+    <!--Specify one or more folders where the feature group will appear in the UI.-->
+    <Folders>
+        <Folder Path="CustomNameFormat\Admin">
+            <!--Optionally specify the products for which this folder is visible.-->
+        </Folder>
+    </Folders>
+
+    <!--Specify one or more features that belong to the feature group.-->
+    <Features>
+        <Feature FeatureID="1eece55d-5f1b-4fc1-a592-857b5055d0df" FeatureType="DataFormInstance" />
+		<Feature FeatureID="5a8b26e0-37b8-4fea-a8d0-7081ef226eed" FeatureType="DataFormInstance" />
+		<Feature FeatureID="066642db-fe2f-4247-b75e-8246b29d24f4" FeatureType="SystemPrivilege" />
+    </Features>
+    
+</FeatureGroupSpec>

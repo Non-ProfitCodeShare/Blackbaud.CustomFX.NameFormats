@@ -1,0 +1,68 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes"
+	ID="0235bda3-4358-4cd0-856c-0f3bd46acd0c"
+	Name="USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL"
+	Description="Custom Individual Salutation Formal"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL"
+	IsNameFormatFunction="true"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL
+(
+	@CONSTITUENTID uniqueidentifier,
+	@LASTNAME nvarchar(100),
+	@FIRSTNAME nvarchar(50),
+	@MIDDLENAME nvarchar(50),
+	@TITLE nvarchar(100),
+	@SUFFIX nvarchar(100),
+	@SPOUSELASTNAME nvarchar(100),
+	@SPOUSEFIRSTNAME nvarchar(50),
+	@SPOUSEMIDDLENAME nvarchar(50),
+	@SPOUSETITLE nvarchar(100),
+	@SPOUSESUFFIX nvarchar(100)
+)
+returns nvarchar(700)
+with execute as caller
+as begin
+	declare @result nvarchar(700);
+	set @result = '';
+	
+	declare @titleguid uniqueidentifier;
+	declare @suffixguid uniqueidentifier;
+	SET @titleguid = null; 
+	SET @suffixguid = null; 
+	SELECT @titleguid = dbo.USR_UFN_GETTITLEGUID(@TITLE)
+	SELECT @suffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX)
+	
+	
+	if len(isnull(@TITLE, '')) > 0
+		set @result = @result + @TITLE + N' '
+
+	if len(isnull(@firstname, '')) > 0 AND len(isnull(@title, '')) = 0
+		set @result = @result + @FIRSTNAME + N' '
+
+
+	set @result = @result + @LASTNAME
+		
+	if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIX) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
+	begin
+		if left(@SUFFIX, 1) <> ',' AND @SUFFIX <> 'I' AND @SUFFIX <> 'II' AND @SUFFIX <> 'III' AND @SUFFIX <> 'IV' AND @SUFFIX <> 'V'
+			set @result = @result + N', '
+		if @SUFFIX = 'I'  OR @SUFFIX = 'II' OR @SUFFIX = 'III' OR @SUFFIX = 'IV' OR @SUFFIX = 'V'
+			set @result = @result + N' '
+		set @result = @result + @SUFFIX;
+	end
+		
+	if len(isnull(@title, '')) = 0 and len(isnull(@firstname, '')) = 0 
+		set @result = @lastname + N' Household';
+			
+	return @result;
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

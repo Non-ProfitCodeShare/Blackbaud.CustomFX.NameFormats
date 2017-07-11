@@ -1,0 +1,176 @@
+﻿<GlobalChangeSpec 
+	xmlns="bb_appfx_globalchange"
+	xmlns:c="bb_appfx_commontypes"
+	ID="c7fb5509-a25d-4dea-b893-e1afe19d5f2b"
+	Name="Custom Name Format - Clear Out And Load Name Formats"
+	Description="Removes and replaces the current name formats in the database. Execute with caution."
+	Author="Nolan Regenwether"
+	DisplayName="Custom Name Format - Clear Out And Load Name Formats"
+	GlobalChangeFolder="CustomNameFormat\Admin"
+	SPName="USR_USP_GLOBALCHANGE_CLEAROUTANDLOADNAMEFORMATS"
+>
+
+	<!-- describe the SP that performs the global change operation -->
+	<CreateProcedureSQL>
+		<![CDATA[
+create procedure dbo.USR_USP_GLOBALCHANGE_CLEAROUTANDLOADNAMEFORMATS
+(
+	@CHANGEAGENTID uniqueidentifier = null,
+	@ASOF as datetime = null,
+	@NUMBERADDED int = 0 output,
+	@NUMBEREDITED int = 0 output,
+	@NUMBERDELETED int = 0 output
+)
+as			
+	set nocount off;
+	
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate();
+	set @NUMBERADDED = 0;
+	set @NUMBEREDITED = 0;
+	set @NUMBERDELETED = 0; 
+	
+	
+	if @CHANGEAGENTID is null
+		exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output;
+					
+	begin try
+	
+	---- Get rid of the naming oppurtunity recognition stuff 
+	UPDATE NOR
+	SET nor.CUSTOMNAMEFORMAT =  COALESCE(case nf.CUSTOMNAME when '' then null else nf.CUSTOMNAME end, nf.FORMATTEDNAME), nor.CONSTITUENTNAMEFORMATID = null 
+	FROM dbo.NAMINGOPPORTUNITYRECOGNITION nor
+	INNER JOIN dbo.NAMEFORMAT nf
+		ON nor.CONSTITUENTNAMEFORMATID = nf.ID
+	
+	
+	IF OBJECT_ID('tempdb..#TEMPNAMEFORMATCONSTIT') IS NOT NULL
+		DROP TABLE #TEMPNAMEFORMATCONSTIT
+	IF OBJECT_ID('tempdb..#TEMPNFTCSTD') IS NOT NULL
+		DROP TABLE #TEMPNFTCSTD
+	IF OBJECT_ID('tempdb..#TEMPNFTCOTH') IS NOT NULL
+		DROP TABLE #TEMPNFTCOTH
+	IF OBJECT_ID('tempdb..#TEMPNFTCCOMB') IS NOT NULL
+		DROP TABLE #TEMPNFTCCOMB
+	IF OBJECT_ID('tempdb..#TEMPNFF') IS NOT NULL
+		DROP TABLE #TEMPNFF
+
+	CREATE TABLE #TEMPNFF (
+		nffid uniqueidentifier null, 
+		formatsqlfunction nvarchar(100),
+		nameformattypecode nvarchar(50), 
+		nameformattypecodeid uniqueidentifier null
+	)
+
+	INSERT INTO #TEMPNFF (nffid, formatsqlfunction, nameformattypecode, nameformattypecodeid)
+	VALUES 
+	 (null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDR_FORMAL', 'Household Addressee Formal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDR_INFORMAL', 'Household Addressee Informal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SAL_INFORMAL', 'Household Salutation Informal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SAL_FORMAL', 'Household Salutation Formal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL', 'Individual Addressee Formal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_INFORMAL', 'Individual Addressee Informal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL', 'Individual Salutation Formal', null)
+	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL', 'Individual Salutation Informal', null)
+	
+
+	update a
+	set a.nffid = b.ID, a.nameformattypecodeid = c.ID
+	FROM #TEMPNFF a 
+	JOIN dbo.NAMEFORMATFUNCTION b
+		ON b.FORMATSQLFUNCTION = a.formatsqlfunction
+	JOIN dbo.NAMEFORMATTYPECODE c 
+		ON c.DESCRIPTION = a.nameformattypecode
+
+	SELECT ID, DESCRIPTION 
+	INTO #TEMPNFTCSTD
+	FROM dbo.NAMEFORMATTYPECODE 
+		WHERE DESCRIPTION IN (SELECT nameformattypecode from #TEMPNFF)
+	
+	-- if there are other types add them here - uncomment these lines and the one below to add those
+	--SELECT ID, DESCRIPTION 
+	--INTO #TEMPNFTCOTH
+	--FROM dbo.NAMEFORMATTYPECODE 
+	--WHERE DESCRIPTION IN (
+	--'MY OTHER TYPE', 'MY OTHER OTHER TYPE' )
+
+	SELECT ID, DESCRIPTION 
+	INTO #TEMPNFTCCOMB
+	FROM dbo.NAMEFORMATTYPECODE 
+	WHERE ID IN (SELECT ID FROM #TEMPNFTCSTD
+		-- UNION ALL SELECT ID FROM #TEMPNFTCOTH
+	)
+
+	-- Remove Current ones of that type 
+	DELETE FROM dbo.NAMEFORMAT 
+	WHERE NAMEFORMATTYPECODEID IN (SELECT nameformattypecodeid FROM #TEMPNFF);
+
+	SET @NUMBERDELETED = @@ROWCOUNT
+
+	---- Remove others not of our current types
+	DELETE FROM dbo.NAMEFORMAT
+	WHERE NAMEFORMATTYPECODEID NOT IN (SELECT ID FROM #TEMPNFTCCOMB) AND ID NOT IN (SELECT CONSTITUENTNAMEFORMATID FROM dbo.NAMINGOPPORTUNITYRECOGNITION);
+	
+	SET @NUMBERDELETED = @NUMBERDELETED + @@ROWCOUNT
+
+	---- Create the new ones 
+	
+	INSERT INTO dbo.NAMEFORMAT (ID, CONSTITUENTID, NAMEFORMATTYPECODEID, NAMEFORMATFUNCTIONID, SEQUENCE, ADDEDBYID, CHANGEDBYID, DATEADDED, DATECHANGED, PRIMARYADDRESSEE, PRIMARYSALUTATION, CUSTOMNAME, SITEID)
+	SELECT newID() as ID, 	
+		c.ID as CONSTITUENTID,
+		nff.nameformattypecodeid as NAMEFORMATTYPECODEID,
+		nff.nffid as NAMEFORMATFUNCTIONID, 
+		0 as SEQUENCE, 
+		@CHANGEAGENTID as ADDEDBYID, 
+		@CHANGEAGENTID as CHANGEDBYID, 
+		@CURRENTDATE as DATEADDED, 
+		@CURRENTDATE as DATECHANGED, 
+		0 as PRIMARYADDRESSEE, 
+		0 as PRIMARYSALUTATION, 
+		'' as CUSTOMNAME, 
+		null as SITEID
+		FROM (SELECT * FROM dbo.CONSTITUENT WHERE ISORGANIZATION = 0 AND ISGROUP = 0 ) c
+		CROSS JOIN #TEMPNFF nff
+		
+	SET @NUMBERADDED = @NUMBERADDED + @@ROWCOUNT
+	
+	---- Set the Primaries 
+	UPDATE nf
+	SET nf.PRIMARYADDRESSEE = 1
+	FROM dbo.NAMEFORMAT nf
+	JOIN dbo.NAMEFORMATTYPECODE nftc
+		ON nftc.ID = nf.NAMEFORMATTYPECODEID
+	WHERE NFTC.DESCRIPTION IN ('Household Addressee Formal')
+
+
+	UPDATE nf 
+	SET nf.PRIMARYSALUTATION = 1
+	FROM dbo.NAMEFORMAT nf
+	JOIN dbo.NAMEFORMATTYPECODE nftc
+		ON nftc.ID = nf.NAMEFORMATTYPECODEID
+	WHERE NFTC.DESCRIPTION IN ('Household Salutation Formal')
+	
+	
+		return 0;
+	end try
+	
+	begin catch
+		exec dbo.USP_RAISE_ERROR;
+		return 1;
+	end catch
+		]]>
+	</CreateProcedureSQL>
+
+	<!--<ParametersFormMetaData>
+
+		--><!-- describe fields on the parameter form, which correspond to parameters on the SP.  Note that system parameters 
+		like the context @CHANGEAGENTID, @ASOF, @NUMBERADDED, @NUMBEREDITED, and @NUMBERDELETED need not be listed. --><!--
+		<FormMetaData xmlns="bb_appfx_commontypes">
+			<FormFields>
+				<FormField FieldID="FIELD1" Caption="Field 1" DataType="Integer" />
+				<FormField FieldID="FIELD2" Caption="Field 2" DataType="Integer" />
+			</FormFields>
+		</FormMetaData>
+	</ParametersFormMetaData>-->
+	
+</GlobalChangeSpec>

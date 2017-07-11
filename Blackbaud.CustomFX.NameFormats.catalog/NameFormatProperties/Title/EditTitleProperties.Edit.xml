@@ -1,0 +1,195 @@
+﻿<EditDataFormTemplateSpec 
+    xmlns="bb_appfx_editdataformtemplate"
+    xmlns:c="bb_appfx_commontypes"
+    ID="c3475edf-4500-4562-a6e8-5916a6467f87"
+    Name="Set Title Options"
+    Description="Set Title Options"
+    Author="Nolan Regenwether"
+    DataFormInstanceID="5a8b26e0-37b8-4fea-a8d0-7081ef226eed"
+    c:SecurityUIFolder="NameFormat\Admin"
+    FormHeader="Set Title Options"
+    HasID="false"
+    >
+
+	
+		
+	<SPDataForm>
+
+		<!-- define the edit load SP, which is used to load the data for the form -->
+		<LoadImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDITLOAD_EDITTITLEPROPERTIES">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDITLOAD_EDITTITLEPROPERTIES
+(
+    @DATALOADED bit = 0 output,
+    @TSLONG bigint = 0 output,
+	@TITLECOLFIELD xml = null output
+)
+as
+
+	set nocount on;
+
+	-- be sure to set these, in case the select returns no rows
+	set @DATALOADED = 0
+	set @TSLONG = 0
+
+	SELECT @TITLECOLFIELD = 
+	(SELECT 
+	tc.ID as TITLECODEID,
+	coalesce(tp.ISSPECIALTITLE, 1)     as ISSPECIAL, 
+	coalesce(tp.ISMARITALTITLE, 0) as ISMARITAL, 
+	coalesce(tp.ISRELIGIOUSTITLE, 0)     as ISRELIGIOUS, 
+	coalesce(tp.GENDER, 0)    as GENDER 
+	FROM dbo.TITLECODE tc
+	LEFT OUTER JOIN dbo.USR_TITLEPROPERTIES tp
+		ON tc.ID = tp.TITLECODEID
+	ORDER BY tc.DESCRIPTION
+	FOR XML PATH('ITEM'), ROOT('TITLECOLFIELD'))
+
+	SET @DATALOADED = 1
+
+	return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</LoadImplementation>
+
+		<SaveImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDIT_EDITTITLEPROPERTIES">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDIT_EDITTITLEPROPERTIES 
+(
+	@CHANGEAGENTID uniqueidentifier = null,
+	@TITLECOLFIELD xml
+)
+as
+
+	set nocount on;
+
+	if @CHANGEAGENTID is null  
+		exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+				
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate()
+
+	begin try
+		 --handle updating the data
+		update tp
+		SET
+			tp.ISSPECIALTITLE = tc.ISSPECIAL, 
+			tp.ISMARITALTITLE = tc.ISMARITAL, 
+			tp.ISRELIGIOUSTITLE = tc.ISRELIGIOUS,
+			tp.GENDER = tc.GENDER
+		FROM dbo.USR_TITLEPROPERTIES tp
+		INNER JOIN (
+			SELECT TBL.COL.value('TITLECODEID[1]', 'uniqueidentifier') AS TITLECODEID,
+				isnull(TBL.COL.value('ISSPECIAL[1]', 'bit'), 0) AS [ISSPECIAL], 
+				isnull(TBL.COL.value('ISMARITAL[1]', 'bit'), 0) AS [ISMARITAL], 
+				isnull(TBL.COL.value('ISRELIGIOUS[1]', 'bit'), 0) AS [ISRELIGIOUS], 
+				isnull(TBL.COL.value('GENDER[1]', 'tinyint'), 0) AS [GENDER]
+			FROM @TITLECOLFIELD.nodes('//TITLECOLFIELD/ITEM') Tbl(Col)
+		) tc
+			ON tc.TITLECODEID = tp.ID 
+
+
+		INSERT INTO dbo.USR_TITLEPROPERTIES(ID, TITLECODEID, ISSPECIALTITLE, ISMARITALTITLE, ISRELIGIOUSTITLE, GENDER, ADDEDBYID, CHANGEDBYID, DATEADDED, DATECHANGED)
+		SELECT tc.TITLECODEID, tc.TITLECODEID, tc.ISSPECIAL, tc.ISMARITAL, tc.ISRELIGIOUS, tc.GENDER, @CHANGEAGENTID, @CHANGEAGENTID, @CURRENTDATE, @CURRENTDATE
+		FROM (
+			SELECT TBL.COL.value('TITLECODEID[1]', 'uniqueidentifier') AS TITLECODEID,
+				isnull(TBL.COL.value('ISSPECIAL[1]', 'bit'), 0) AS [ISSPECIAL], 
+				isnull(TBL.COL.value('ISMARITAL[1]', 'bit'), 0) AS [ISMARITAL], 
+				isnull(TBL.COL.value('ISRELIGIOUS[1]', 'bit'), 0) AS [ISRELIGIOUS], 
+				isnull(TBL.COL.value('GENDER[1]', 'tinyint'), 0) AS [GENDER]
+			FROM @TITLECOLFIELD.nodes('//TITLECOLFIELD/ITEM') Tbl(Col)
+		) tc
+		WHERE tc.TITLECODEID NOT IN (SELECT ID FROM dbo.USR_TITLEPROPERTIES)
+
+		
+
+	end try
+	begin catch
+		exec dbo.USP_RAISE_ERROR
+		return 1
+	end catch
+
+return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</SaveImplementation>
+
+	</SPDataForm>
+
+	<!-- describe fields on the form, which correspond to parameters on the SP.  Note that system paramters 
+	like the record ID, DATALOADED, TSLONG, and CURRENTAPPUSERID need not be listed. -->
+	<FormMetaData xmlns="bb_appfx_commontypes">
+		<FormFields>
+			<FormField FieldID="TITLECOLFIELD" Caption="Title Collection" DataType="XML">
+				<Collection EnablePaging="true" ItemsPerPage="100" RenderStyle="Default" ViewMode="Grid"> <!--IDField="ID"-->
+					<Fields>
+						<FormField FieldID="TITLECODEID" Caption="Title" DataType="Guid">
+							<CodeTable CodeTableName="TITLECODE" IncludeInactive="true" />
+							<!--<SimpleDataList SimpleDataListID="1f79adfc-b7fa-469f-b128-d632285466f7" AllowItemsNotInDataSource="false"></SimpleDataList>-->
+							
+						</FormField>
+						<FormField FieldID="ISSPECIAL" Caption="Is Title Special? (Dr.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="ISMARITAL" Caption="Treat As Unmarried? (Mrs.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="ISRELIGIOUS" Caption="Is Title Religious? (Fr.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="GENDER" Caption="Gender Of Title" ReadOnly="false" Hidden="false" DataType="TinyInt">
+							<ValueList>
+								<Items>
+									<Item>
+										<Value>0</Value>
+										<Label>Unisex</Label>
+									</Item>
+									<Item>
+										<Value>1</Value>
+										<Label>Male</Label>
+									</Item>
+									<Item>
+										<Value>2</Value>
+										<Label>Female</Label>
+									</Item>
+								</Items>
+							</ValueList>
+						</FormField>
+					</Fields>
+				</Collection>
+				
+			</FormField>
+
+		</FormFields>
+
+        <WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFX.NameFormats.UIModel.dll" ClassName="Blackbaud.CustomFX.NameFormats.UIModel.SetTitleOptionsUIModel" />
+            <WebUI>
+                <ExternalResource Url="browser/htmlforms/custom/blackbaud.customfx.nameformats/TitleUIModel/SetTitleOptions.html" />
+            </WebUI>
+        </WebUIComponent>
+
+        <!--<WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFX.NameFormats.UIModel.dll" ClassName="Blackbaud.CustomFX.NameFormats.UIModel.SetTitleOptionsUIModel" />
+            <WebUI>
+                <ExternalResource Url="browser/htmlforms/custom/blackbaud.customfx.nameformats/TitleUIModel/SetTitleOptions.html" />
+            </WebUI>
+        </WebUIComponent>-->
+		
+	</FormMetaData>
+	<AlterExistingPages xmlns="bb_appfx_pagedefinition">
+		<AlterPages>
+			<AlterPage PageID="0ef074a4-55e9-49f2-9279-2a2c17a302be">
+				<AlterOrAddPageActionGroups>
+					<AlterOrAddPageActionGroup ID="3c9d9af0-c935-414b-a366-00adc1289f54" Caption="Set Name Format Options" ImageKey="CATALOG:Blackbaud.AppFx.Marketing.MembershipCatalog,Blackbaud.AppFx.Marketing.MembershipCatalog.membership.png" Visible="true">
+						<AddAction Sequence="0">
+							<Action ID="6fac1455-ad8b-4cb8-9851-632d2b8eeb68" Caption="Set Title Options" ImageKey="CATALOG:Blackbaud.AppFx.LifeChanges.Catalog,Blackbaud.AppFx.LifeChanges.Catalog.man.png" Visible="true" ShowCaptionOnToolbar="true" Enabled="true">
+								<c:ShowDataForm DataFormID="5a8b26e0-37b8-4fea-a8d0-7081ef226eed">
+									<c:PostActionEvent>
+										<c:Toast Importance="Normal" Message="Title Options Set Successfully" />
+									</c:PostActionEvent>
+								</c:ShowDataForm>
+							</Action>
+						</AddAction>
+					</AlterOrAddPageActionGroup>
+				</AlterOrAddPageActionGroups>
+			</AlterPage>
+		</AlterPages>
+	</AlterExistingPages>
+</EditDataFormTemplateSpec>

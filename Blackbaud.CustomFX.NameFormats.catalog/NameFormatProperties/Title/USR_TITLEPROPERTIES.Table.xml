@@ -1,0 +1,21 @@
+﻿<TableSpec 
+	xmlns="bb_appfx_table"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="c0e476b6-4bb5-43db-b356-2d1202b18b05"
+	Name="Title Properties Table"
+	Description="Stores properties of the titles in the database."
+	Author="Nolan Regenwether"
+	Tablename="USR_TITLEPROPERTIES"		   
+	IsBuiltIn="false"
+	>
+
+	<!-- define fields on the table -->
+	<Fields>
+		<ForeignKeyField Name="TITLECODEID" Required="true" Description="Title Guid" ForeignDataType="uniqueidentifier" ForeignTable="TITLECODE" ForeignFieldName="ID" Cardinality="OneToOne" OnDelete="CascadeDelete" />
+		<BooleanField Name="ISSPECIALTITLE"       DefaultValue="false" Description="Is this title special (Dr., Senator)"/>
+		<BooleanField Name="ISMARITALTITLE"			  DefaultValue="false" Description="Is this title marital (Mrs.)"/>
+		<BooleanField Name="ISRELIGIOUSTITLE"     DefaultValue="false" Description="Is this title religious (Pastor, Father, Friar, Cardinal, etc.)"/>
+		<NumberField  Name="GENDER" Type="tinyint"  Description="Gender of Title" DefaultValue="0"  />
+	</Fields>
+
+</TableSpec>

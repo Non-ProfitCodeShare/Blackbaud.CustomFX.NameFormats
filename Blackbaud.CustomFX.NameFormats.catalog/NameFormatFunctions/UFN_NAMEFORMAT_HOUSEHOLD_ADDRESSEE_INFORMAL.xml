@@ -1,0 +1,377 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes"
+	ID="1a3c6b1a-00b1-43b3-8f8c-1dfeb89ac600"
+	Name="USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_INFORMAL"
+	Description="Custom Household Addressee Informal"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_INFORMAL"
+	IsNameFormatFunction="true"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_INFORMAL
+(
+	@CONSTITUENTID uniqueidentifier,
+	@LASTNAME nvarchar(100),
+	@FIRSTNAME nvarchar(50),
+	@MIDDLENAME nvarchar(50),
+	@TITLE nvarchar(100),
+	@SUFFIX nvarchar(100),
+	@SPOUSELASTNAME nvarchar(100),
+	@SPOUSEFIRSTNAME nvarchar(50),
+	@SPOUSEMIDDLENAME nvarchar(50),
+	@SPOUSETITLE nvarchar(100),
+	@SPOUSESUFFIX nvarchar(100)
+)
+returns nvarchar(700)
+with execute as caller
+as begin
+	declare @result nvarchar(700)
+	set @result = ''
+	declare @spouseid uniqueidentifier;
+	SET @spouseid = null;
+	SELECT @spouseid = dbo.USR_UFN_GETSPOUSEID(@CONSTITUENTID);
+	
+	
+	declare @titleguid uniqueidentifier;
+	declare @suffixguid uniqueidentifier;
+	SET @titleguid = null; 
+	SET @suffixguid = null; 
+	SELECT @titleguid = dbo.USR_UFN_GETTITLEGUID(@TITLE)
+	SELECT @suffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX)
+	declare @spousetitleguid uniqueidentifier;
+	declare @spousesuffixguid uniqueidentifier;
+	SET @spousetitleguid = null; 
+	SET @spousesuffixguid = null; 
+	SELECT @spousetitleguid = dbo.USR_UFN_GETspousetitleGUID(@spousetitle)
+	SELECT @spousesuffixguid = dbo.USR_UFN_GETspousesuffixGUID(@spousesuffix)
+				
+
+	-- Unmarried
+	if @spouseid is null
+	begin
+		
+
+		SELECT @result = dbo.USR_UFN_INDIVIDUAL_ADDRESSEE_INFORMAL( @CONSTITUENTID , @LASTNAME , @FIRSTNAME , @MIDDLENAME , @TITLE , @SUFFIX , @SPOUSELASTNAME , @SPOUSEFIRSTNAME , @SPOUSEMIDDLENAME , @SPOUSETITLE , @SPOUSESUFFIX  );
+
+		return @result;
+
+	end
+
+	-- Married 
+	if @spouseid is not null
+	begin
+		-- Find out the gender and  how special their title is in order to address them properly
+		declare @gender int; 
+		declare @spousegender int;
+		declare @spechandle bit; 
+		declare @spousespechandle bit;
+		declare @spousefirst bit;
+		declare @usespousename bit;
+		declare @usetitles bit;
+		declare @usefirstnames bit;
+		declare @difflastnames bit;
+		declare @usespousesuff bit;
+		declare @usesuff bit;
+		declare @usemiddle bit;
+		declare @usealphabetical bit;
+		declare @cantinformal bit;
+		declare @religspousefirst bit;
+		declare @conisprim bit;
+		declare @spisprim bit;
+		
+		SET @gender = null;
+		SET @spousegender = null;
+		SET @spechandle = null;
+		SET @spousespechandle = null;
+		SET @spousefirst = null;
+		SET @usespousename = null;
+		SET @usetitles = null;
+		SET @usefirstnames = null;
+		SET @difflastnames = null;
+		SET @usespousesuff = null;
+		SET @usesuff = null;
+		SET @usemiddle = null;
+		SET @usealphabetical = null;
+		SET @cantinformal = null;
+		SET @religspousefirst = null;
+		SET @conisprim = null;
+		SET @spisprim = null;		
+
+		SELECT @gender = dbo.USR_UFN_GETGENDER(@CONSTITUENTID);
+		SELECT @spousegender = dbo.USR_UFN_GETGENDER(@spouseid);
+		SELECT @spechandle = case dbo.USR_UFN_ISMARITALTITLE(@TITLEGUID) when 1 then 0 else 1 end;
+		SELECT @spousespechandle = case dbo.USR_UFN_ISMARITALTITLE(@spousetitleguid) when 1 then 0 else 1 end;
+		SELECT @conisprim = dbo.USR_UFN_ISPRIMARYHOUSEHOLDMEMBER(@CONSTITUENTID)
+		SELECT @spisprim = dbo.USR_UFN_ISPRIMARYHOUSEHOLDMEMBER(@spouseid)
+		
+		if @gender = 0 AND @TITLEGUID IS NOT NULL
+		begin
+			SET @gender = dbo.USR_UFN_GETTITLEGENDER(@TITLEGUID)				
+		end
+
+
+		if @spousegender = 0 AND @SPOUSETITLEGUID IS NOT NULL
+		begin
+			SET @spousegender = dbo.USR_UFN_GETTITLEGENDER(@SPOUSETITLEGUID)				
+		end
+		
+		if LOWER(@LASTNAME) <> LOWER(@SPOUSELASTNAME) 
+			SET @difflastnames = 1;
+		else
+			SET @difflastnames = 0;
+		
+		if len(@FIRSTNAME) = 0 OR LEN(@SPOUSEFIRSTNAME) = 0 
+			SET @cantinformal = 1
+		else
+			SET @cantinformal = 0
+			
+		if (dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 and dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 0)
+			set @religspousefirst = 0;
+		if (dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 0 and dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1)
+			set @religspousefirst = 1;
+		
+		if len(isnull(@title, '')) = 0 OR len(isnull(@SPOUSETITLE, '')) = 0
+			set @usetitles = 0
+		else
+			set @usetitles = 1
+		
+		if len(@firstname) = 0 OR len(@spousefirstname) = 0 
+			set @usefirstnames = 0
+		else
+			set @usefirstnames = 1
+			
+		if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1 AND @usefirstnames = 1) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
+			SET @USESUFF = 1
+		if  (len(isnull(@SPOUSESUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SPOUSESUFFIXGUID) = 1  AND @usefirstnames = 1) OR (len(isnull(@SPOUSESUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SPOUSESUFFIXGUID) = 1)
+			SET @USESPOUSESUFF = 1
+		if @usesuff is null
+			SET @usesuff = 0 
+		if @usespousesuff is null
+			set @usespousesuff = 0
+
+		if @usefirstnames = 0 AND @usetitles = 0 
+		begin
+			if LOWER(@LASTNAME) <> LOWER(@SPOUSELASTNAME)
+			begin
+				return dbo.USR_UFN_SORTNAME(@LASTNAME, @SPOUSELASTNAME, 0) + N' and ' + dbo.USR_UFN_SORTNAME(@LASTNAME, @SPOUSELASTNAME, 1) + N' Household';
+			end
+			ELSE 
+			begin
+				return @LASTNAME + N' Household';
+			end 
+		end
+
+		if @spousegender = 2 AND @gender = 1 and @spousefirst is null 
+		begin
+			set @spousefirst = 1;
+			set @usealphabetical = 0;
+		end
+		if @spousegender = 1 AND @gender = 2 and @spousefirst is null 
+		begin
+			set @spousefirst = 0;
+			set @usealphabetical = 0;
+		end
+		if (@spousegender = @gender ) and @spousefirst is null and @spisprim = 1 and @conisprim = 0 
+		begin
+			set @usealphabetical = 0
+			set @spousefirst = 1
+		end
+		if (@spousegender = @gender ) and @spousefirst is null and @spisprim = 0 and @conisprim = 1 
+		begin
+			set @usealphabetical = 0
+			set @spousefirst = 0
+		end
+		if (@spousegender = @gender ) and @spousefirst is null 
+		begin
+			set @usealphabetical = 1
+			set @spousefirst = null
+		end
+		if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 or dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1
+		begin
+			if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 and dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 0
+				SET @spousefirst = 0
+			
+			if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 0 and dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1
+				SET @spousefirst = 1
+		end
+		if @spousefirst is null AND (@usealphabetical <> 0 OR @usealphabetical is null)
+			set @usealphabetical = 1;
+		if @usealphabetical = 1 AND @spousefirst is null 
+		begin
+			
+			
+			if LOWER(@LASTNAME) = LOWER(@SPOUSELASTNAME)
+			begin
+				if LOWER(@FIRSTNAME) = LOWER(dbo.USR_UFN_SORTNAME(@FIRSTNAME, @SPOUSEFIRSTNAME, 0))
+					set @spousefirst = 0
+				else
+					set @spousefirst = 1
+			
+			end
+			else
+			begin
+				if LOWER(@LASTNAME) = LOWER(dbo.USR_UFN_SORTNAME(@FIRSTNAME, @SPOUSEFIRSTNAME, 0))
+					set @spousefirst = 0
+				else
+					set @spousefirst = 1
+			end
+			
+		end
+		
+		if @usealphabetical = 1 AND @spousefirst is null 
+		begin
+			if LOWER(@LASTNAME) = LOWER(@SPOUSELASTNAME)
+			begin
+				if LOWER(@FIRSTNAME) = LOWER(dbo.USR_UFN_SORTNAME(@FIRSTNAME, @SPOUSEFIRSTNAME, 0))
+					set @spousefirst = 0
+				else
+					set @spousefirst = 1
+			
+			end
+			else
+			begin
+				if LOWER(@LASTNAME) = LOWER(dbo.USR_UFN_SORTNAME(@FIRSTNAME, @SPOUSEFIRSTNAME, 0))
+					set @spousefirst = 0
+				else
+					set @spousefirst = 1
+			end
+		end
+		-- End of picking if the spouse is first. 
+
+		if @cantinformal = 0 
+		begin
+			if @spousefirst = 0 
+			begin
+				if (dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 or dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1) AND LEN(isnull(@TITLE, '')) > 0 
+				begin
+					set @result = @TITLE + N' '
+				end
+						
+				if len(@firstname) > 0 
+					set @result = @result + @firstname 
+						
+						
+				if LOWER(@LASTNAME) <> LOWER(@SPOUSELASTNAME)
+				BEGIN
+					IF len(@LASTNAME) > 0 
+						set @result = @result + N' ' + @LASTNAME 
+					if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSTITLE(@SUFFIXGUID) = 1)
+					begin
+						if left(@SUFFIX, 1) <> ',' AND @SUFFIX <> 'I' AND @SUFFIX <> 'II' AND @SUFFIX <> 'III' AND @SUFFIX <> 'IV' AND @SUFFIX <> 'V'
+							set @result = @result + N', '
+						if @SUFFIX = 'I'  OR @SUFFIX = 'II' OR @SUFFIX = 'III' OR @SUFFIX = 'IV' OR @SUFFIX = 'V'
+							set @result = @result + N' '
+						set @result = @result + @SUFFIX;
+					end
+				END
+						
+				if len(@result) > 0 
+					set @result = @result + N' and '
+						
+				if (dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 or dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1) AND LEN(isnull(@SPOUSETITLE, '')) > 0 
+				begin
+					set @result = @result + @SPOUSETITLE  +  N' '
+				end
+						
+				if len(@SPOUSEFIRSTNAME) > 0
+					set @result = @result + @SPOUSEFIRSTNAME + N' '
+							
+				if len(@LASTNAME) > 0 
+					set @result = @result + @SPOUSELASTNAME 
+
+				if (len(isnull(@SPOUSESUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SPOUSESUFFIXGUID) = 1 ) OR (len(isnull(@SPOUSESUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SPOUSESUFFIXGUID) = 1)
+				begin
+					if left(@SPOUSESUFFIX, 1) <> ',' AND @SPOUSESUFFIX <> 'I' AND @SPOUSESUFFIX <> 'II' AND @SPOUSESUFFIX <> 'III' AND @SPOUSESUFFIX <> 'IV' AND @SPOUSESUFFIX <> 'V'
+						set @result = @result + N', '
+					if @SPOUSESUFFIX = 'I'  OR @SPOUSESUFFIX = 'II' OR @SPOUSESUFFIX = 'III' OR @SPOUSESUFFIX = 'IV' OR @SPOUSESUFFIX = 'V'
+						set @result = @result + N' '
+					set @result = @result + @SPOUSESUFFIX;
+				end
+						
+				set @result = replace(@result, '  ', ' ');
+				return @result;	
+			end
+			
+			
+			
+			if @spousefirst = 1
+			begin
+				if (dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 or dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1) AND LEN(isnull(@SPOUSETITLE, '')) > 0 
+				begin
+					set @result =  @SPOUSETITLE + N' '
+				end
+						
+						
+				if len(@spousefirstname) > 0 
+					set @result = @result + @spousefirstname 
+						
+						
+				if LOWER(@LASTNAME) <> LOWER(@SPOUSELASTNAME) 
+				BEGIN
+					IF len(@SPOUSELASTNAME) > 0 
+						set @result = @result + N' ' + @SPOUSELASTNAME 
+					if (len(isnull(@SPOUSESUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SPOUSESUFFIXGUID) = 1 ) OR (len(isnull(@SPOUSESUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SPOUSESUFFIXGUID) = 1)
+					begin
+						if left(@SPOUSESUFFIX, 1) <> ',' AND @SPOUSESUFFIX <> 'I' AND @SPOUSESUFFIX <> 'II' AND @SPOUSESUFFIX <> 'III' AND @SPOUSESUFFIX <> 'IV' AND @SPOUSESUFFIX <> 'V'
+							set @result = @result + N', '
+						if @SPOUSESUFFIX = 'I'  OR @SPOUSESUFFIX = 'II' OR @SPOUSESUFFIX = 'III' OR @SPOUSESUFFIX = 'IV' OR @SPOUSESUFFIX = 'V'
+							set @result = @result + N' '
+						set @result = @result + @SPOUSESUFFIX;
+					end
+				END
+						
+				if len(@result) > 0 
+					set @result = @result + N' and '
+						
+				if (dbo.USR_UFN_ISRELIGIOUSSUFFIX(@TITLEGUID) = 1 or dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SPOUSETITLEGUID) = 1) AND LEN(isnull(@TITLE, '')) > 0 
+				begin
+					set @result = @result + @TITLE + N' '
+				end
+						
+				if len(@FIRSTNAME) > 0
+					set @result = @result + @FIRSTNAME + N' '
+							
+				if len(@LASTNAME) > 0
+					set @result = @result + @LASTNAME 
+
+				if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1)
+				begin
+					if left(@SUFFIX, 1) <> ',' AND @SUFFIX <> 'I' AND @SUFFIX <> 'II' AND @SUFFIX <> 'III' AND @SUFFIX <> 'IV' AND @SUFFIX <> 'V'
+						set @result = @result + N', '
+					if @SUFFIX = 'I'  OR @SUFFIX = 'II' OR @SUFFIX = 'III' OR @SUFFIX = 'IV' OR @SUFFIX = 'V'
+						set @result = @result + N' '
+					set @result = @result + @SUFFIX;
+				end
+						
+				set @result = replace(@result, '  ', ' ');
+				return @result;	
+			end
+		end
+		else --cantinformal = 1
+		begin
+			
+			if LOWER(@LASTNAME) <> LOWER(@SPOUSELASTNAME)
+			begin
+				return dbo.USR_UFN_SORTNAME(@LASTNAME, @SPOUSELASTNAME, 0) + N' and ' + dbo.USR_UFN_SORTNAME(@LASTNAME, @SPOUSELASTNAME, 1) + N' Household';
+			end
+			ELSE 
+			begin
+				return @LASTNAME + N' Household';
+			end
+			set @result = replace(@result, '  ', ' ');
+			return @result;	
+
+		end
+
+
+	end
+	set @result = replace(@result, '  ', ' ');
+	return @result;	
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>
