@@ -4,7 +4,7 @@
 	ID="f5bb523b-e286-44cb-9939-93623fa742c5"
 	Name="USR_UFN_ISSPECIALTITLE"
 	Description="Is special title (e.g. professional, religious)?"
-	Author="Nolan Regenwether"
+	Author="Mitchell Gibbs"
 	DBFunctionName="USR_UFN_ISSPECIALTITLE"
 	>
 

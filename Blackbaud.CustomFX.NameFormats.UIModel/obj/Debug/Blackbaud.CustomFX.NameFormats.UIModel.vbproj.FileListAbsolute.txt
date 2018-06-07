@@ -5,3 +5,6 @@ C:\ProjectNonDignity\NameFormats\Blackbaud.CustomFX.NameFormats\Blackbaud.Custom
 C:\ProjectNonDignity\NameFormats\Blackbaud.CustomFX.NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.pdb
 C:\Program Files\Blackbaud\bbappfx\vroot\bin\custom\Blackbaud.CustomFX.NameFormats.UIModel.dll
 C:\Program Files\Blackbaud\bbappfx\vroot\bin\custom\Blackbaud.CustomFX.NameFormats.UIModel.pdb
+C:\Users\p479667\Documents\GitHub\PSJH_NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.vbprojResolveAssemblyReference.cache
+C:\Users\p479667\Documents\GitHub\PSJH_NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.dll
+C:\Users\p479667\Documents\GitHub\PSJH_NameFormats\Blackbaud.CustomFX.NameFormats.UIModel\obj\Debug\Blackbaud.CustomFX.NameFormats.UIModel.pdb

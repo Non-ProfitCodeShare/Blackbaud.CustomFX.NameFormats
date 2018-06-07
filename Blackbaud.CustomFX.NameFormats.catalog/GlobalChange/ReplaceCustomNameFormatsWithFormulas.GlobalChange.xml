@@ -4,7 +4,7 @@
 	ID="055bf496-553a-4593-8f5a-993c62dd02f1"
 	Name="Custom Name Format - Replace Custom Name Formats With Formulas"
 	Description="For Constituent Name Formats that are custom static text, generate all possible Name Format Formula options and, if one matches, replace the static text with the formula"
-	Author="PSJH"
+	Author="Mitchell Gibbs"
 	DisplayName="Replace Custom Name Formats With Formulas Global Change"
 	GlobalChangeFolder="CustomNameFormat\Admin"
 	SPName="USR_USP_GLOBALCHANGE_REPLACECUSTOMNAMEFORMATSWITHFORMULAS"
