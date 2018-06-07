@@ -1,0 +1,31 @@
+﻿<SQLFunctionSpec
+	xmlns="bb_appfx_sqlfunction"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="f5bb523b-e286-44cb-9939-93623fa742c5"
+	Name="USR_UFN_ISSPECIALTITLE"
+	Description="Is special title (e.g. professional, religious)?"
+	Author="Nolan Regenwether"
+	DBFunctionName="USR_UFN_ISSPECIALTITLE"
+	>
+
+	<CreateFunctionSQL>
+		<![CDATA[
+create function dbo.USR_UFN_ISSPECIALTITLE(@TITLEGUID uniqueidentifier)
+returns bit
+with execute as caller
+as begin
+	DECLARE @RESULT bit = 0
+	
+	SELECT @RESULT = 1
+	FROM dbo.USR_TITLEPROPERTIES tp
+	WHERE tp.TITLECODEID = @TITLEGUID AND (ISSPECIALTITLE = 1 or ISRELIGIOUSTITLE = 1)
+	
+	IF @RESULT IS NULL 
+		SET @RESULT = 0
+	
+	return @RESULT
+end
+		]]>
+	</CreateFunctionSQL>
+
+</SQLFunctionSpec>

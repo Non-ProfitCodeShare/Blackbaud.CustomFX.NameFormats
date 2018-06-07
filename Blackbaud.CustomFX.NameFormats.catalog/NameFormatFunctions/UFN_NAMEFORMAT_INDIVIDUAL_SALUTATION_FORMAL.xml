@@ -48,7 +48,7 @@ as begin
 
 	set @result = @result + @LASTNAME
 		
-	if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIX) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
+	if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
 	begin
 		if left(@SUFFIX, 1) <> ',' AND @SUFFIX <> 'I' AND @SUFFIX <> 'II' AND @SUFFIX <> 'III' AND @SUFFIX <> 'IV' AND @SUFFIX <> 'V'
 			set @result = @result + N', '
