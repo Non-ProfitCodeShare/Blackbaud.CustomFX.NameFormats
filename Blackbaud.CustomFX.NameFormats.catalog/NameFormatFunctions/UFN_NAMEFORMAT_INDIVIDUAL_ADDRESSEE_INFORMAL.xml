@@ -49,7 +49,7 @@ as begin
 			set @result = @result + @TITLE + N' ';	
 	end
 
-	if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 
+	if dbo.USR_UFN_ISTITLERELIGIOUS(@TITLEGUID) = 1 
 	BEGIN
 		if len(isnull(@title, '')) > 0 
 			set @result = @TITLE + N' ';
@@ -60,7 +60,7 @@ as begin
 	if len(@result) > 0
 		set @result = @result + @LASTNAME 
 
-	if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIX) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
+	if (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISFAMILIALSUFFIX(@SUFFIXGUID) = 1 ) OR (len(isnull(@SUFFIX, '')) > 0 AND dbo.USR_UFN_ISRELIGIOUSSUFFIX(@SUFFIXGUID) = 1)
 	begin
 		
 		

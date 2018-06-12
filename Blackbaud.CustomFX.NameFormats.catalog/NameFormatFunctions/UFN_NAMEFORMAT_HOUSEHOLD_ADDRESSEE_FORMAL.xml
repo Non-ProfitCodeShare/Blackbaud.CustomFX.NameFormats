@@ -32,14 +32,14 @@ as begin
 	set @result = ''
 	declare @spouseid uniqueidentifier;
 	SET @spouseid = null;
-	SELECT @spouseid = dbo.USR_GETSPOUSEID(@CONSTITUENTID);	
+	SELECT @spouseid = dbo.USR_UFN_GETSPOUSEID(@CONSTITUENTID);	
 	
 	
 
 	-- Unmarried
 	if @spouseid is null
 	begin
-		SELECT @result = dbo.USR_UFN_INDIVIDUAL_ADDRESSEE_FORMAL( @CONSTITUENTID , @LASTNAME , @FIRSTNAME , @MIDDLENAME , @TITLE , @SUFFIX , @SPOUSELASTNAME , @SPOUSEFIRSTNAME , @SPOUSEMIDDLENAME , @SPOUSETITLE , @SPOUSESUFFIX  );
+		SELECT @result = dbo.USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL( @CONSTITUENTID , @LASTNAME , @FIRSTNAME , @MIDDLENAME , @TITLE , @SUFFIX , @SPOUSELASTNAME , @SPOUSEFIRSTNAME , @SPOUSEMIDDLENAME , @SPOUSETITLE , @SPOUSESUFFIX  );
 
 		return @result;
 	end
@@ -92,14 +92,14 @@ as begin
 		SET @spousesuffixguid = null;
 		
 
-		SELECT @gender = dbo.USR_UFN_GETGENDER(@CONSTITUENTID);
+    SELECT @gender = dbo.USR_UFN_GETGENDER(@CONSTITUENTID);
 		SELECT @spousegender = dbo.USR_UFN_GETGENDER(@spouseid);
-		SELECT @spechandle = CASE dbo.USR_UFN_ISMARITALTITLE(@CONSTITUENTID) WHEN 0 THEN 1 ELSE 0 END;
-		SELECT @spousespechandle = CASE dbo.USR_UFN_ISMARITALTITLE(@spouseid) WHEN 0 THEN 1 ELSE 0 END;
+		SELECT @titleguid = dbo.USR_UFN_GETTITLEGUID(@TITLE)
+		SELECT @spechandle = dbo.USR_UFN_ISSPECIALTITLE(@titleguid);
+		SELECT @spousetitleguid = dbo.USR_UFN_GETTITLEGUID(@SPOUSETITLE)
+		SELECT @spousespechandle = dbo.USR_UFN_ISSPECIALTITLE(@spousetitleguid);
 		SELECT @conisprim = dbo.USR_UFN_ISPRIMARYHOUSEHOLDMEMBER(@CONSTITUENTID)
 		SELECT @spisprim = dbo.USR_UFN_ISPRIMARYHOUSEHOLDMEMBER(@spouseid)
-		SELECT @titleguid = dbo.USR_UFN_GETTITLEGUID(@TITLE)
-		SELECT @spousetitleguid = dbo.USR_UFN_GETTITLEGUID(@SPOUSETITLE)
 		SELECT @suffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX)
 		SELECT @spousesuffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SPOUSESUFFIX)
 		
@@ -200,12 +200,12 @@ as begin
 			set @usealphabetical = 1
 			set @spousefirst = null
 		end
-		if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 or dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1
+		if dbo.USR_UFN_ISTITLERELIGIOUS(@TITLEGUID) = 1 or dbo.USR_UFN_ISTITLERELIGIOUS(@SPOUSETITLEGUID) = 1
 		begin
-			if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 and dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 0
+			if dbo.USR_UFN_ISTITLERELIGIOUS(@TITLEGUID) = 1 and dbo.USR_UFN_ISTITLERELIGIOUS(@SPOUSETITLEGUID) = 0
 				SET @spousefirst = 0
 			
-			if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 0 and dbo.USR_UFN_ISRELIGIOUSTITLE(@SPOUSETITLEGUID) = 1
+			if dbo.USR_UFN_ISTITLERELIGIOUS(@TITLEGUID) = 0 and dbo.USR_UFN_ISTITLERELIGIOUS(@SPOUSETITLEGUID) = 1
 				SET @spousefirst = 1
 			
 		end
@@ -260,9 +260,14 @@ as begin
 			SET @result = @title + N' and ' + @spousetitle + N' '
 			if len(@firstname) > 0 
 				SET @result = @result + @firstname + N' '
-			--if len(@middlename) > 0 and len(@firstname) > 0
+
+      --if len(@middlename) > 0 and len(@firstname) > 0
 				--SET @result = @result + dbo.UFN_MAKEINITIALS(@MIDDLENAME) + N' '
-			SET @result = @result + @lastname;
+        
+			if len(@spousefirstname) > 0 
+				SET @result = @result + N'and ' + @spousefirstname + N' '
+
+      SET @result = @result + @lastname;
 			if @usesuff = 1
 			begin
 				if left(@SUFFIX, 1) <> ',' AND @SUFFIX <> 'I' AND @SUFFIX <> 'II' AND @SUFFIX <> 'III' AND @SUFFIX <> 'IV' AND @SUFFIX <> 'V'
@@ -281,10 +286,16 @@ as begin
 			SET @result = @spousetitle + N' and ' + @title + N' '
 			if len(@spousefirstname) > 0 
 				SET @result = @result + @spousefirstname + N' '
+        
 			--if len(@spousemiddlename) > 0 and len(@spousefirstname) > 0
 				--SET @result = @result + dbo.UFN_MAKEINITIALS(@SPOUSEMIDDLENAME) + N' '
-			SET @result = @result + @spouselastname
-			if @usespousesuff = 1 
+        
+			if len(@firstname) > 0 
+				SET @result = @result + N'and ' + @firstname + N' '
+
+      SET @result = @result + @spouselastname
+
+      if @usespousesuff = 1 
 			begin
 				if left(@SPOUSESUFFIX, 1) <> ',' AND @SPOUSESUFFIX <> 'I' AND @SPOUSESUFFIX <> 'II' AND @SPOUSESUFFIX <> 'III' AND @SPOUSESUFFIX <> 'IV' AND @SPOUSESUFFIX <> 'V'
 					set @result = @result + N', '

@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>..\..\..\..\Program Files\Blackbaud\bbappfx\vroot\bin\custom\</OutputPath>
+    <OutputPath>..\..\..\..\..\..\Program Files\Blackbaud\bbappfx\vroot\bin\custom\</OutputPath>
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022,42353,42354,42355</NoWarn>
@@ -171,7 +171,7 @@
     <EmbeddedResource Include="NameFormatFunctions\UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_FORMAL.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GlobalChange\UpdateNameFormatFuntionInfo.GlobalChange.xml" />
+    <EmbeddedResource Include="GlobalChange\UpdateNameFormatFunctionInfo.GlobalChange.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GlobalChange\ReplaceHouseholdNameFormats.GlobalChange.xml" />
@@ -187,6 +187,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SystemPrivilege\CustomNameFormats.Privilege.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TitleSupportingFunctions\UFN_ISSPECIALTITLE.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GlobalChange\ReplaceCustomNameFormatsWithFormulas.GlobalChange.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -131,7 +131,7 @@ return 0;
 							
 						</FormField>
 						<FormField FieldID="ISSPECIAL" Caption="Is Title Special? (Dr.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
-						<FormField FieldID="ISMARITAL" Caption="Treat As Unmarried? (Mrs.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
+						<FormField FieldID="ISMARITAL" Caption="Treat As Married? (Mrs.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
 						<FormField FieldID="ISRELIGIOUS" Caption="Is Title Religious? (Fr.)" ReadOnly="false" Hidden="false" DataType="Boolean" />
 						<FormField FieldID="GENDER" Caption="Gender Of Title" ReadOnly="false" Hidden="false" DataType="TinyInt">
 							<ValueList>

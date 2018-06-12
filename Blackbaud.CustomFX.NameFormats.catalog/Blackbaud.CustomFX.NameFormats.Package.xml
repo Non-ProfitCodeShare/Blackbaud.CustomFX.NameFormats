@@ -57,7 +57,7 @@
 	-->
 	
 	<c:DependencyList>
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_FORMAL.xml" />
+    		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_FORMAL.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_INFORMAL.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_FORMAL.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_INFORMAL.xml" />
@@ -76,6 +76,7 @@
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_ISSUFFIXACADEMIC_DOCTORAL.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_GETTITLEGENDER.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_GETTITLEGUID.xml" />
+        <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_ISSPECIALTITLE.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_ISMARITALTITLE.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_ISTITLEACADEMIC_DOCTORAL.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UFN_ISTITLERELIGIOUS.xml" />
@@ -83,11 +84,12 @@
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.USR_TITLEPROPERTIES.Table.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.EditSuffixProperties.Edit.xml" />
         <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.EditTitleProperties.Edit.xml" />
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UpdateNameFormatFuntionInfo.GlobalChange.xml" />
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.ReplaceHouseholdNameFormats.GlobalChange.xml" />
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.ClearOutAndLoadNameFormats.GlobalChange.xml" />
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.AddNameFormatTypeCodes.GlobalChange.xml" />
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.CustomNameFormats.Privilege.xml" />
-		<c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.CustomNameFormat.FeatureGroup.xml" />
+        <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.ReplaceCustomNameFormatsWithFormulas.GlobalChange.xml" />
+        <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.UpdateNameFormatFunctionInfo.GlobalChange.xml" />
+		    <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.ReplaceHouseholdNameFormats.GlobalChange.xml" />
+		    <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.ClearOutAndLoadNameFormats.GlobalChange.xml" />
+		    <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.AddNameFormatTypeCodes.GlobalChange.xml" />
+		    <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.CustomNameFormats.Privilege.xml" />
+		    <c:Dependency CatalogAssembly="Blackbaud.CustomFX.NameFormats.catalog.dll" CatalogItem="Blackbaud.CustomFX.NameFormats.catalog.CustomNameFormat.FeatureGroup.xml" />
 	</c:DependencyList>
 </PackageSpec>

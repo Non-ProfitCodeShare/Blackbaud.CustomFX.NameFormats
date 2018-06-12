@@ -19,7 +19,11 @@ create procedure dbo.USR_USP_GLOBALCHANGE_CLEAROUTANDLOADNAMEFORMATS
 	@ASOF as datetime = null,
 	@NUMBERADDED int = 0 output,
 	@NUMBEREDITED int = 0 output,
-	@NUMBERDELETED int = 0 output
+	@NUMBERDELETED int = 0 output,
+  @CLEANNAMINGOPPORTUNITYRECOGNITIONSTUFF bit = 0,
+  @REMOVEOTHERNAMEFORMATS bit = 0,
+  @SETPRIMARIES bit = 1
+
 )
 as			
 	set nocount off;
@@ -36,14 +40,16 @@ as
 					
 	begin try
 	
-	---- Get rid of the naming oppurtunity recognition stuff 
-	UPDATE NOR
-	SET nor.CUSTOMNAMEFORMAT =  COALESCE(case nf.CUSTOMNAME when '' then null else nf.CUSTOMNAME end, nf.FORMATTEDNAME), nor.CONSTITUENTNAMEFORMATID = null 
-	FROM dbo.NAMINGOPPORTUNITYRECOGNITION nor
-	INNER JOIN dbo.NAMEFORMAT nf
-		ON nor.CONSTITUENTNAMEFORMATID = nf.ID
-	
-	
+---- Get rid of the naming oppurtunity recognition stuff 
+IF @CLEANNAMINGOPPORTUNITYRECOGNITIONSTUFF = 1
+  BEGIN
+    UPDATE NOR
+	  SET nor.CUSTOMNAMEFORMAT =  COALESCE(case nf.CUSTOMNAME when '' then null else nf.CUSTOMNAME end, nf.FORMATTEDNAME), nor.CONSTITUENTNAMEFORMATID = null 
+	  FROM dbo.NAMINGOPPORTUNITYRECOGNITION nor
+	  INNER JOIN dbo.NAMEFORMAT nf
+		  ON nor.CONSTITUENTNAMEFORMATID = nf.ID
+	END;
+  
 	IF OBJECT_ID('tempdb..#TEMPNAMEFORMATCONSTIT') IS NOT NULL
 		DROP TABLE #TEMPNAMEFORMATCONSTIT
 	IF OBJECT_ID('tempdb..#TEMPNFTCSTD') IS NOT NULL
@@ -55,6 +61,7 @@ as
 	IF OBJECT_ID('tempdb..#TEMPNFF') IS NOT NULL
 		DROP TABLE #TEMPNFF
 
+/*
 	CREATE TABLE #TEMPNFF (
 		nffid uniqueidentifier null, 
 		formatsqlfunction nvarchar(100),
@@ -62,17 +69,37 @@ as
 		nameformattypecodeid uniqueidentifier null
 	)
 
-	INSERT INTO #TEMPNFF (nffid, formatsqlfunction, nameformattypecode, nameformattypecodeid)
+INSERT INTO #TEMPNFF (nffid, formatsqlfunction, nameformattypecode, nameformattypecodeid)
 	VALUES 
-	 (null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDR_FORMAL', 'Household Addressee Formal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDR_INFORMAL', 'Household Addressee Informal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SAL_INFORMAL', 'Household Salutation Informal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SAL_FORMAL', 'Household Salutation Formal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL', 'Individual Addressee Formal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_INFORMAL', 'Individual Addressee Informal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL', 'Individual Salutation Formal', null)
-	,(null, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL', 'Individual Salutation Informal', null)
-	
+	 (NEWID(), 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_FORMAL', 'Household Addressee Formal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_INFORMAL', 'Household Addressee Informal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_INFORMAL', 'Household Salutation Informal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_FORMAL', 'Household Salutation Formal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL', 'Individual Addressee Formal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_INFORMAL', 'Individual Addressee Informal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL', 'Individual Salutation Formal', NEWID())
+	,(NEWID(), 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL', 'Individual Salutation Informal', NEWID())
+*/
+  SELECT *
+  INTO #TEMPNFF
+  FROM
+  (SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_FORMAL' AS formatsqlfunction, 'Household Addressee Formal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+  UNION ALL
+	SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_ADDRESSEE_INFORMAL' AS formatsqlfunction, 'Household Addressee Informal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+	UNION ALL
+	SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_INFORMAL' AS formatsqlfunction, 'Household Salutation Informal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+	UNION ALL
+	SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_HOUSEHOLD_SALUTATION_FORMAL' AS formatsqlfunction, 'Household Salutation Formal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+	UNION ALL
+  SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_FORMAL' AS formatsqlfunction, 'Individual Addressee Formal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+	UNION ALL
+  SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_ADDRESSEE_INFORMAL' AS formatsqlfunction, 'Individual Addressee Informal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+	UNION ALL
+  SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_FORMAL' AS formatsqlfunction, 'Individual Salutation Formal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+	UNION ALL
+  SELECT NEWID() AS nffid, 'USR_UFN_NAMEFORMAT_INDIVIDUAL_SALUTATION_INFORMAL' AS formatsqlfunction, 'Individual Salutation Informal' AS nameformattypecode, NEWID() AS nameformattypecodeid
+  ) dt
+
 
 	update a
 	set a.nffid = b.ID, a.nameformattypecodeid = c.ID
@@ -107,11 +134,15 @@ as
 
 	SET @NUMBERDELETED = @@ROWCOUNT
 
-	---- Remove others not of our current types
-	DELETE FROM dbo.NAMEFORMAT
-	WHERE NAMEFORMATTYPECODEID NOT IN (SELECT ID FROM #TEMPNFTCCOMB) AND ID NOT IN (SELECT CONSTITUENTNAMEFORMATID FROM dbo.NAMINGOPPORTUNITYRECOGNITION);
+IF @REMOVEOTHERNAMEFORMATS = 1
+  BEGIN
+  
+  ---- Remove others not of our current types
+	  DELETE FROM dbo.NAMEFORMAT
+	  WHERE NAMEFORMATTYPECODEID NOT IN (SELECT ID FROM #TEMPNFTCCOMB) AND ID NOT IN (SELECT CONSTITUENTNAMEFORMATID FROM dbo.NAMINGOPPORTUNITYRECOGNITION);
 	
-	SET @NUMBERDELETED = @NUMBERDELETED + @@ROWCOUNT
+	  SET @NUMBERDELETED = @NUMBERDELETED + @@ROWCOUNT
+  END;
 
 	---- Create the new ones 
 	
@@ -134,22 +165,35 @@ as
 		
 	SET @NUMBERADDED = @NUMBERADDED + @@ROWCOUNT
 	
-	---- Set the Primaries 
-	UPDATE nf
-	SET nf.PRIMARYADDRESSEE = 1
-	FROM dbo.NAMEFORMAT nf
-	JOIN dbo.NAMEFORMATTYPECODE nftc
-		ON nftc.ID = nf.NAMEFORMATTYPECODEID
-	WHERE NFTC.DESCRIPTION IN ('Household Addressee Formal')
+  IF @SETPRIMARIES = 1
+    BEGIN
 
+---- Clear existing primaries
+      UPDATE nf
+	    SET nf.PRIMARYADDRESSEE = 0
+	    FROM dbo.NAMEFORMAT nf
+      WHERE nf.PRIMARYADDRESSEE = 1
+      
+	    UPDATE nf 
+	    SET nf.PRIMARYSALUTATION = 0
+	    FROM dbo.NAMEFORMAT nf
+	    WHERE nf.PRIMARYSALUTATION = 1
 
-	UPDATE nf 
-	SET nf.PRIMARYSALUTATION = 1
-	FROM dbo.NAMEFORMAT nf
-	JOIN dbo.NAMEFORMATTYPECODE nftc
-		ON nftc.ID = nf.NAMEFORMATTYPECODEID
-	WHERE NFTC.DESCRIPTION IN ('Household Salutation Formal')
-	
+---- Set the Primaries 
+	    UPDATE nf
+	    SET nf.PRIMARYADDRESSEE = 1
+	    FROM dbo.NAMEFORMAT nf
+	    JOIN dbo.NAMEFORMATTYPECODE nftc
+		    ON nftc.ID = nf.NAMEFORMATTYPECODEID
+	    WHERE NFTC.DESCRIPTION IN ('Household Addressee Formal')
+
+	    UPDATE nf 
+	    SET nf.PRIMARYSALUTATION = 1
+	    FROM dbo.NAMEFORMAT nf
+	    JOIN dbo.NAMEFORMATTYPECODE nftc
+		    ON nftc.ID = nf.NAMEFORMATTYPECODEID
+	    WHERE NFTC.DESCRIPTION IN ('Household Salutation Formal')
+    END
 	
 		return 0;
 	end try
@@ -161,16 +205,17 @@ as
 		]]>
 	</CreateProcedureSQL>
 
-	<!--<ParametersFormMetaData>
+	<ParametersFormMetaData>
 
-		--><!-- describe fields on the parameter form, which correspond to parameters on the SP.  Note that system parameters 
-		like the context @CHANGEAGENTID, @ASOF, @NUMBERADDED, @NUMBEREDITED, and @NUMBERDELETED need not be listed. --><!--
+		<!-- describe fields on the parameter form, which correspond to parameters on the SP.  Note that system parameters 
+		like the context @CHANGEAGENTID, @ASOF, @NUMBERADDED, @NUMBEREDITED, and @NUMBERDELETED need not be listed. -->
 		<FormMetaData xmlns="bb_appfx_commontypes">
 			<FormFields>
-				<FormField FieldID="FIELD1" Caption="Field 1" DataType="Integer" />
-				<FormField FieldID="FIELD2" Caption="Field 2" DataType="Integer" />
-			</FormFields>
+				<FormField FieldID="CLEANNAMINGOPPORTUNITYRECOGNITIONSTUFF" Caption="Get rid of the naming oppurtunity recognition stuff " DataType="Boolean" DefaultValueText="false" />
+        <FormField FieldID="REMOVEOTHERNAMEFORMATS" Caption="Remove other, non default, Name Formats" DataType="Boolean" DefaultValueText="false" />
+        <FormField FieldID="SETPRIMARIES" Caption="Set Primary Name Formats to Household Defaults" DataType="Boolean" DefaultValueText="false" />
+      </FormFields>
 		</FormMetaData>
-	</ParametersFormMetaData>-->
+	</ParametersFormMetaData>
 	
 </GlobalChangeSpec>

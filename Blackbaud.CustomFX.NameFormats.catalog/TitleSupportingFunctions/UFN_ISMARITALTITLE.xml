@@ -3,7 +3,7 @@
 	xmlns:c="bb_appfx_commontypes" 
 	ID="6ead64b1-d989-46d4-8895-63af4cfb7c81"
 	Name="USR_UFN_ISMARITALTITLE"
-	Description="Is marital (Standard, indicates married / unmarried, mr. mrs. ms. etc.) title?"
+	Description="Is marital (Standard, indicates married, mr. mrs. etc.) title?"
 	Author="Nolan Regenwether"
 	DBFunctionName="USR_UFN_ISMARITALTITLE"
 	>

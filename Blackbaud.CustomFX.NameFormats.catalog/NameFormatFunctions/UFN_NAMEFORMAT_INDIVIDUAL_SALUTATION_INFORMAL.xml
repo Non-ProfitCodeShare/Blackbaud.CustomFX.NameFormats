@@ -39,7 +39,7 @@ as begin
 	SELECT @suffixguid = dbo.USR_UFN_GETSUFFIXGUID(@SUFFIX)
 	
 	
-	if dbo.USR_UFN_ISRELIGIOUSTITLE(@TITLEGUID) = 1 
+	if dbo.USR_UFN_ISTITLERELIGIOUS(@TITLEGUID) = 1 
 	begin
 		set @result = @TITLE + N' '
 		if len(isnull(@FIRSTNAME, '')) <> 0 
